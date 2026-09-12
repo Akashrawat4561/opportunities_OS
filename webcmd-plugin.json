@@ -1,10 +1,10 @@
 {
-  "name": "preppals",
+  "name": "oppurtunityos",
   "version": "0.1.0",
   "description": "One command placement prep intel for any target company",
   "webcmd": ">=0.5.3",
   "author": {
-    "name": "Govind Kaushal",
-    "handle": "govindkaushal09"
+    "name": "Cors",
+    "handle": "corsa"
   }
 }
