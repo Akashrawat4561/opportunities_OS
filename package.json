@@ -1,0 +1,9 @@
+{
+    "name": "opportunities_os",
+    "version": "0.1.0",
+    "type": "module",
+    "description": "One command placement prep intel for any target company",
+    "peerDependencies": {
+      "@agentrhq/webcmd": ">=0.5.3"
+    }
+  }

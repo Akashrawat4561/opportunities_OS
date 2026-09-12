@@ -1,0 +1,19 @@
+{
+  "name": "naukri",
+  "version": "1.0.0",
+  "description": "Fetch open jobs from Naukri.com",
+  "webcmd": ">=0.7.0",
+  "commands": [
+    {
+      "name": "roles",
+      "description": "Get open jobs for a company from Naukri.com",
+      "args": [
+        { "name": "company", "type": "string", "help": "Company name e.g. atlassian" }
+      ],
+      "columns": ["title", "location", "posted_at", "url"],
+      "strategy": "PUBLIC",
+      "browser": true,
+      "entry": "roles.js"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "webcmd-naukri",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@agentrhq/webcmd": "*"
+  }
+}
