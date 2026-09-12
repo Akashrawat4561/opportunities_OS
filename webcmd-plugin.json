@@ -6,5 +6,18 @@
   "author": {
     "name": "Cors",
     "handle": "corsa"
-  }
+  },
+  "commands": [
+    {
+      "name": "search",
+      "description": "Fetch open roles, LeetCode problems, and GFG interview experiences for a target company",
+      "args": [
+        { "name": "company", "type": "string", "help": "Company slug e.g. amazon, google, atlassian" }
+      ],
+      "columns": ["company", "roles", "top_tags", "problems", "experiences"],
+      "strategy": "COOKIE",
+      "browser": true,
+      "entry": "target.js"
+    }
+  ]
 }

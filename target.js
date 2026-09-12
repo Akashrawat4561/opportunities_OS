@@ -1,12 +1,12 @@
 import { cli, Strategy } from "@agentrhq/webcmd/registry";
 
 cli({
-  site: "preppals",
-  name: "target",
-  tags: ["jobs", "prep", "leetcode"],
+  site: "oppurtunityos",
+  name: "search",
+  tags: ["jobs", "prep", "leetcode", "gfg"],
   access: "read",
   description:
-    "Fetch open roles, leetcode tags, and interview experiences for a target company",
+    "One command to fetch open roles, LeetCode prep, and GFG interview experiences for any target company",
   domain: "linkedin.com",
   strategy: Strategy.COOKIE,
   navigateBefore: false,
@@ -15,7 +15,7 @@ cli({
       name: "company",
       required: true,
       positional: true,
-      help: 'Company slug, for example "atlassian" or "stripe"',
+      help: 'Company slug, for example "amazon", "google", or "atlassian"',
     },
   ],
   columns: ["company", "roles", "top_tags", "experiences", "problems"],
