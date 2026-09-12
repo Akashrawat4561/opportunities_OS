@@ -236,6 +236,70 @@
     }
     #search-btn:hover { background: var(--accent-dark); }
 
+    .upload-section {
+      margin-top: 1rem;
+      font-size: .8125rem;
+      color: var(--text-2);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      justify-content: center;
+    }
+    .upload-section-divider {
+      width: 40px;
+      height: 1px;
+      background: var(--border);
+    }
+    .upload-btn {
+      color: var(--accent);
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      background: none;
+      border: none;
+      padding: .2rem;
+    }
+    .upload-btn:hover { color: var(--accent-dark); text-decoration: underline; }
+    
+    #mock-profile-card {
+      display: none;
+      background: var(--bg-white);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin-top: 1.5rem;
+      text-align: left;
+      box-shadow: var(--shadow-sm);
+      width: 100%;
+      animation: fadeUp 0.3s ease;
+    }
+    #mock-profile-card.active {
+      display: block;
+    }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .mock-profile-header {
+      font-size: .75rem;
+      font-weight: 700;
+      color: var(--green);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin-bottom: .6rem;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+    }
+    .mock-profile-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .75rem;
+      font-size: .8125rem;
+    }
+    .mock-profile-item { display: flex; flex-direction: column; }
+    .mock-profile-lbl { color: var(--text-3); font-size: .7rem; }
+    .mock-profile-val { color: var(--text-1); font-weight: 600; }
+
     /* Source pipeline */
     .pipeline {
       display: flex;
@@ -821,6 +885,29 @@
           </svg>
         </button>
       </div>
+      
+      <div class="upload-section">
+        <div class="upload-section-divider"></div>
+        <span>or</span>
+        <label class="upload-btn">
+          <input type="file" id="resume-upload" accept=".pdf,.doc,.docx" style="display: none;" />
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          Upload Resume
+        </label>
+        <div class="upload-section-divider"></div>
+      </div>
+      
+      <div id="mock-profile-card">
+        <div class="mock-profile-header">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          Profile Extracted
+        </div>
+        <div class="mock-profile-content">
+          <div class="mock-profile-item"><span class="mock-profile-lbl">Role</span><span class="mock-profile-val">Senior Frontend Engineer</span></div>
+          <div class="mock-profile-item"><span class="mock-profile-lbl">Target</span><span class="mock-profile-val" id="mock-target-val">Amazon</span></div>
+          <div class="mock-profile-item" style="grid-column: 1 / -1;"><span class="mock-profile-lbl">Skills</span><span class="mock-profile-val">React, Node.js, AWS, JavaScript</span></div>
+        </div>
+      </div>
     </div>
 
     <div class="pipeline" id="pipeline-full" aria-label="Data sources">
@@ -1173,6 +1260,8 @@
     const ctaBtn         = document.getElementById('cta-search-btn');
     const navCtaBtn      = document.getElementById('nav-cta-btn');
     const heroSection    = document.getElementById('hero');
+    const resumeUpload   = document.getElementById('resume-upload');
+    const mockProfile    = document.getElementById('mock-profile-card');
 
     /* ─── Helpers ───────────────────────────────────────────────────────── */
     const delay = ms => new Promise(r => setTimeout(r, ms));
@@ -1514,6 +1603,7 @@
 
     function handleClear() {
       resultsSection.classList.remove('active');
+      mockProfile.classList.remove('active');
       searchInput.value = '';
       heroSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
       setTimeout(() => searchInput.focus(), 550);
@@ -1525,11 +1615,61 @@
     }
 
     /* ─── Events ────────────────────────────────────────────────────────── */
-    searchBtn.addEventListener('click', handleSearch);
-    searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') handleSearch(); });
+    searchBtn.addEventListener('click', () => { mockProfile.classList.remove('active'); handleSearch(); });
+    searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') { mockProfile.classList.remove('active'); handleSearch(); } });
     clearBtn.addEventListener('click', handleClear);
     ctaBtn.addEventListener('click', scrollToSearch);
     navCtaBtn.addEventListener('click', scrollToSearch);
+
+    resumeUpload.addEventListener('change', async (e) => {
+      if (!e.target.files.length) return;
+      
+      // Reset UI state
+      resultsSection.classList.remove('active');
+      loaderBar.style.width = '0%';
+      mockProfile.classList.remove('active');
+      
+      // Switch loader steps to resume parsing
+      loadingState.classList.add('active');
+      const stepEls = document.querySelectorAll('.loading-step');
+      stepEls.forEach(el => {
+        el.classList.remove('done', 'active');
+        el.querySelector('.step-mark').textContent = '○';
+      });
+      stepEls[0].childNodes[1].textContent = ' Reading resume structure...';
+      stepEls[1].childNodes[1].textContent = ' Extracting skills and experience...';
+      stepEls[2].childNodes[1].textContent = ' Identifying target roles...';
+      stepEls[3].childNodes[1].textContent = ' Matching opportunities...';
+      stepEls[4].childNodes[1].textContent = ' Preparing career package...';
+      
+      // Fake parsing animation
+      stepEls[0].classList.add('active');
+      stepEls[0].querySelector('.step-mark').textContent = '◉';
+      await delay(800);
+      stepEls[0].classList.replace('active', 'done');
+      stepEls[0].querySelector('.step-mark').textContent = '✓';
+      
+      stepEls[1].classList.add('active');
+      stepEls[1].querySelector('.step-mark').textContent = '◉';
+      await delay(900);
+      stepEls[1].classList.replace('active', 'done');
+      stepEls[1].querySelector('.step-mark').textContent = '✓';
+      
+      // Show profile card
+      const targets = ['Amazon', 'Google', 'Microsoft', 'Atlassian'];
+      const randomTarget = targets[Math.floor(Math.random() * targets.length)];
+      document.getElementById('mock-target-val').textContent = randomTarget;
+      
+      mockProfile.classList.add('active');
+      await delay(500);
+      
+      // Clear file input so it can be triggered again
+      e.target.value = '';
+      
+      // Delegate to regular search flow
+      searchInput.value = randomTarget.toLowerCase();
+      handleSearch();
+    });
 
     /* ─── Quick tags clicks ──────────────────────────────────────────────── */
     window.setSearch = function(val) {
