@@ -3,7 +3,15 @@
     "version": "0.1.0",
     "type": "module",
     "description": "One command placement prep intel for any target company",
+    "scripts": {
+        "start": "node server.js",
+        "dev": "node server.js"
+    },
     "peerDependencies": {
-      "@agentrhq/webcmd": ">=0.5.3"
+        "@agentrhq/webcmd": ">=0.5.3"
+    },
+    "dependencies": {
+        "cors": "^2.8.6",
+        "express": "^5.2.1"
     }
-  }
+}

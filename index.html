@@ -1145,69 +1145,6 @@
 
   <!-- ─── JS ───────────────────────────────────────────────────────────── -->
   <script type="module">
-    /* ─── Mock data ─────────────────────────────────────────────────────── */
-    const MOCK = {
-      fulltime: (q) => ({
-        jobs: {
-          src: 'naukri', title: 'Job Opportunities', desc: `Live listings for "${q}" from Naukri.`,
-          count: '10 roles', footLink: 'View all on Naukri →',
-          items: [
-            { icon: '💼', title: `SDE-1 — ${q} Development Centre`,        meta: ['Bengaluru', '2 days ago'] },
-            { icon: '💼', title: `Business Analyst — ${q}`,                 meta: ['Hyderabad', '1 day ago'] },
-            { icon: '💼', title: `ML Engineer II — ${q}`,                   meta: ['Bengaluru', '5 days ago'] },
-          ],
-        },
-        leetcode: {
-          src: 'lc', title: 'Interview Preparation', desc: `Top LeetCode problems for ${q} interviews.`,
-          count: '15 problems', footLink: 'Open on LeetCode →',
-          items: [
-            { icon: '🧩', title: 'Two Sum',                      meta: ['Array'],         diff: 'Easy'   },
-            { icon: '🧩', title: 'LRU Cache',                    meta: ['Design'],        diff: 'Medium' },
-            { icon: '🧩', title: 'Median of Two Sorted Arrays',  meta: ['Binary Search'], diff: 'Hard'   },
-          ],
-        },
-        gfg: {
-          src: 'gfg', title: 'Interview Discussions', desc: `Real experiences from ${q} candidates.`,
-          count: '3 experiences', footLink: 'Read on GeeksforGeeks →',
-          items: [
-            { icon: '🎙️', title: `${q} Interview Experience | On-Campus`,    meta: ['SDE-1', '2025'] },
-            { icon: '🎙️', title: `${q} Interview Experience | Off-Campus`,   meta: ['SDE-2', '2024'] },
-            { icon: '🎙️', title: `${q} Summer Internship Experience`,        meta: ['Intern', '2024'] },
-          ],
-        },
-        freelance: {
-          src: 'lever', title: 'Freelance Opportunities', desc: 'Remote contract roles from RWS and Welo.',
-          count: '5 gigs', footLink: 'View all on Lever →',
-          items: [
-            { icon: '🔗', title: 'Social Media Content Evaluator (Hindi)', meta: ['RWS TrainAI', 'Remote, New Delhi'] },
-            { icon: '🔗', title: 'AI Data Specialist — Telugu',            meta: ['RWS TrainAI', 'Remote, New Delhi'] },
-            { icon: '🔗', title: 'Data Collection Specialist',             meta: ['Appen', 'Remote, India'] },
-          ],
-        },
-      }),
-
-      freelance: () => ({
-        rws: {
-          src: 'lever', title: 'RWS TrainAI — India', desc: 'Remote freelance opportunities for India.',
-          count: '5 gigs', footLink: 'Apply on Lever →',
-          items: [
-            { icon: '🔗', title: 'Social Media Content Evaluator (Gujarati)', meta: ['Temporary/Contract', 'Remote, Ahmedabad'] },
-            { icon: '🔗', title: 'Social Media Content Evaluator (Malayalam)', meta: ['Temporary/Contract', 'Remote, New Delhi'] },
-            { icon: '🔗', title: 'AI Data Specialist — Tamil',                meta: ['Temporary/Contract', 'Remote, New Delhi'] },
-          ],
-        },
-        appen: {
-          src: 'lever', title: 'Appen — India', desc: 'AI data and annotation freelance tasks.',
-          count: '5 gigs', footLink: 'Apply on Lever →',
-          items: [
-            { icon: '🔗', title: 'Data Collection Task — Hindi Speakers', meta: ['Freelance', 'Remote, India'] },
-            { icon: '🔗', title: 'Speech Annotation Specialist',           meta: ['Freelance', 'Remote, India'] },
-            { icon: '🔗', title: 'AI Evaluation Rater',                   meta: ['Freelance', 'Remote, Worldwide'] },
-          ],
-        },
-      }),
-    };
-
     const STEPS_FULL = [
       'Connecting to career sources…',
       'Searching Naukri for opportunities…',
@@ -1258,21 +1195,29 @@
       return { naukri: 'Naukri', lc: 'LeetCode', gfg: 'GeeksforGeeks', lever: 'Lever · India' }[src] || src;
     }
 
-    function renderCard({ src, title, desc, count, items, footLink }) {
-      const rows = items.map(it => {
+    function renderCard({ src, title, desc, count, items, footLink, footUrl }) {
+      const rows = (items && items.length > 0) ? items.map(it => {
         const diffEl = it.diff
           ? `<span class="diff ${diffClass(it.diff)}">${it.diff}</span>`
           : '';
-        const meta = it.meta.map((m, i) => `<span>${m}</span>${i < it.meta.length - 1 ? '<span class="item-meta-sep">·</span>' : ''}`).join('');
+        const meta = (it.meta || []).map((m, i) => `<span>${m}</span>${i < it.meta.length - 1 ? '<span class="item-meta-sep">·</span>' : ''}`).join('');
+        const inner = `
+          <div class="item-icon" aria-hidden="true">${it.icon}</div>
+          <div class="item-body">
+            <div class="item-title">${it.title}</div>
+            <div class="item-meta">${diffEl}${meta}</div>
+          </div>`;
+        if (it.url) {
+          return `
+            <a class="item-row" href="${it.url}" target="_blank" rel="noopener noreferrer" role="listitem" style="text-decoration:none;color:inherit;">
+              ${inner}
+            </a>`;
+        }
         return `
           <div class="item-row" tabindex="0" role="listitem">
-            <div class="item-icon" aria-hidden="true">${it.icon}</div>
-            <div class="item-body">
-              <div class="item-title">${it.title}</div>
-              <div class="item-meta">${diffEl}${meta}</div>
-            </div>
+            ${inner}
           </div>`;
-      }).join('');
+      }).join('') : `<div style="padding:1.5rem 1rem;color:var(--text-3);font-size:.875rem;text-align:center;">No direct items found for this category</div>`;
 
       return `
         <div class="result-card ${srcClass(src)}">
@@ -1288,27 +1233,172 @@
             <div class="card-desc">${desc}</div>
             <div class="item-list" role="list">${rows}</div>
           </div>
-          <div class="card-foot"><a class="card-foot-link" href="#" tabindex="0">${footLink}</a></div>
+          <div class="card-foot"><a class="card-foot-link" href="${footUrl || '#'}" ${footUrl ? 'target="_blank" rel="noopener noreferrer"' : ''} tabindex="0">${footLink}</a></div>
         </div>`;
     }
 
-    async function runLoading(steps) {
-      const els = document.querySelectorAll('.loading-step');
-      els.forEach((el, i) => {
-        el.classList.remove('done', 'active');
-        el.querySelector('.step-mark').textContent = '○';
-        if (steps[i]) el.childNodes[1].textContent = ' ' + steps[i];
+    function buildFulltimeCards(query, data, freelance) {
+      const roles = data.roles || [];
+      const topTags = data.top_tags || [];
+      const problems = data.problems || [];
+      const experiences = data.experiences || [];
+      const freeGigs = freelance || [];
+
+      // 1. Jobs Card
+      const jobItems = roles.slice(0, 4).map(r => ({
+        icon: '💼',
+        title: r.title,
+        meta: [r.location || 'India', r.posted_at || 'Recent'],
+        url: r.url || `https://www.naukri.com/${encodeURIComponent(query.toLowerCase())}-jobs`
+      }));
+      if (jobItems.length === 0) {
+        jobItems.push({
+          icon: '💼',
+          title: `Search ${query} roles on Naukri`,
+          meta: ['Open Naukri portal'],
+          url: `https://www.naukri.com/${encodeURIComponent(query.toLowerCase())}-jobs`
+        });
+      }
+
+      // 2. LeetCode Card
+      const lcItems = [];
+      problems.forEach(p => {
+        lcItems.push({
+          icon: '🧩',
+          title: p.title,
+          meta: [p.tag || 'Coding'],
+          diff: p.difficulty || 'Medium',
+          url: p.url || `https://leetcode.com/company/${encodeURIComponent(query.toLowerCase())}/`
+        });
+      });
+      topTags.slice(0, 4 - lcItems.length).forEach(t => {
+        lcItems.push({
+          icon: '🏷️',
+          title: `${t.tag} (Frequent Topic)`,
+          meta: [`${t.frequency} tagged problems`],
+          diff: 'Topic',
+          url: `https://leetcode.com/tag/${encodeURIComponent(t.tag.toLowerCase().replace(/\s+/g, '-'))}/`
+        });
+      });
+      if (lcItems.length === 0) {
+        lcItems.push({
+          icon: '🧩',
+          title: `Practice ${query} tagged questions on LeetCode`,
+          meta: ['Company Tagged'],
+          diff: 'Mixed',
+          url: `https://leetcode.com/company/${encodeURIComponent(query.toLowerCase())}/`
+        });
+      }
+
+      // 3. GFG Card
+      const gfgItems = experiences.slice(0, 4).map(e => ({
+        icon: '🎙️',
+        title: e.title,
+        meta: [e.role || 'Interview', e.year || 'Recent'],
+        url: e.url || `https://www.geeksforgeeks.org/tag/${encodeURIComponent(query.toLowerCase())}/`
+      }));
+      if (gfgItems.length === 0) {
+        gfgItems.push({
+          icon: '🎙️',
+          title: `Browse ${query} interview experiences on GeeksforGeeks`,
+          meta: ['Preparation Guides'],
+          url: `https://www.geeksforgeeks.org/tag/${encodeURIComponent(query.toLowerCase())}/`
+        });
+      }
+
+      // 4. Freelance Card
+      const flItems = freeGigs.slice(0, 4).map(f => ({
+        icon: '🔗',
+        title: f.title,
+        meta: [f.company, f.location],
+        url: f.apply_url || 'https://jobs.lever.co/rws'
+      }));
+      if (flItems.length === 0) {
+        flItems.push({
+          icon: '🔗',
+          title: 'Remote AI Evaluator & Annotation roles',
+          meta: ['RWS TrainAI', 'Remote, India'],
+          url: 'https://jobs.lever.co/rws'
+        });
+      }
+
+      return [
+        {
+          src: 'naukri',
+          title: 'Job Opportunities',
+          desc: `Live listings for "${query}" from Naukri.`,
+          count: `${roles.length} roles`,
+          footLink: 'View all on Naukri →',
+          footUrl: `https://www.naukri.com/${encodeURIComponent(query.toLowerCase())}-jobs`,
+          items: jobItems
+        },
+        {
+          src: 'lc',
+          title: 'Interview Preparation',
+          desc: `Top LeetCode problems & topics for ${query}.`,
+          count: `${problems.length + topTags.length} resources`,
+          footLink: 'Open on LeetCode →',
+          footUrl: data.leetcode_link || `https://leetcode.com/company/${encodeURIComponent(query.toLowerCase())}/`,
+          items: lcItems
+        },
+        {
+          src: 'gfg',
+          title: 'Interview Discussions',
+          desc: `Real experiences from ${query} candidates.`,
+          count: `${experiences.length} experiences`,
+          footLink: 'Read on GeeksforGeeks →',
+          footUrl: `https://www.geeksforgeeks.org/tag/${encodeURIComponent(query.toLowerCase())}/`,
+          items: gfgItems
+        },
+        {
+          src: 'lever',
+          title: 'Freelance Opportunities',
+          desc: 'Remote contract roles from RWS and Appen.',
+          count: `${freeGigs.length} gigs`,
+          footLink: 'View all on Lever →',
+          footUrl: 'https://jobs.lever.co/rws',
+          items: flItems
+        }
+      ];
+    }
+
+    function buildFreelanceCards(gigs) {
+      const rwsGigs = gigs.filter(g => (g.company || '').toLowerCase().includes('rws'));
+      const otherGigs = gigs.filter(g => !(g.company || '').toLowerCase().includes('rws'));
+
+      const cards = [];
+
+      cards.push({
+        src: 'lever',
+        title: 'RWS TrainAI — India',
+        desc: 'Remote freelance & contract opportunities for India.',
+        count: `${rwsGigs.length} gigs`,
+        footLink: 'Apply on Lever →',
+        footUrl: 'https://jobs.lever.co/rws',
+        items: rwsGigs.slice(0, 5).map(g => ({
+          icon: '🔗',
+          title: g.title,
+          meta: [g.type || 'Contract', g.location || 'Remote, India'],
+          url: g.apply_url
+        }))
       });
 
-      for (let i = 0; i < els.length; i++) {
-        els[i].classList.add('active');
-        els[i].querySelector('.step-mark').textContent = '◉';
-        loaderBar.style.width = `${((i + 1) / els.length) * 100}%`;
-        await delay(500);
-        els[i].classList.remove('active');
-        els[i].classList.add('done');
-        els[i].querySelector('.step-mark').textContent = '✓';
-      }
+      cards.push({
+        src: 'lever',
+        title: 'Appen / Global Platforms',
+        desc: 'AI data collection, transcription, and evaluation tasks.',
+        count: `${otherGigs.length || gigs.length} gigs`,
+        footLink: 'Apply on Lever →',
+        footUrl: otherGigs[0]?.apply_url || 'https://jobs.lever.co/appen',
+        items: (otherGigs.length > 0 ? otherGigs : gigs).slice(0, 5).map(g => ({
+          icon: '🔗',
+          title: g.title,
+          meta: [g.company || 'Remote', g.location || 'Remote, India'],
+          url: g.apply_url
+        }))
+      });
+
+      return cards;
     }
 
     /* ─── Search handler ────────────────────────────────────────────────── */
@@ -1322,22 +1412,101 @@
       const isFreelance = /^freelance$/i.test(raw);
       const query = raw.charAt(0).toUpperCase() + raw.slice(1);
 
-      // Reset
+      // Reset UI state
       resultsSection.classList.remove('active');
-      loaderBar.style.width = '0';
+      loaderBar.style.width = '0%';
       loadingState.classList.add('active');
       searchBtn.disabled = true;
 
       heroSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-      await runLoading(isFreelance ? STEPS_FREELANCE : STEPS_FULL);
+      const steps = isFreelance ? STEPS_FREELANCE : STEPS_FULL;
+      const stepEls = document.querySelectorAll('.loading-step');
+      stepEls.forEach((el, i) => {
+        el.classList.remove('done', 'active');
+        el.querySelector('.step-mark').textContent = '○';
+        if (steps[i]) el.childNodes[1].textContent = ' ' + steps[i];
+      });
 
-      const data = isFreelance ? MOCK.freelance() : MOCK.fulltime(query);
-      resultsGrid.innerHTML = Object.values(data).map(renderCard).join('');
-      queryBadge.textContent = query;
+      // Start asynchronous fetch to real backend API
+      const fetchUrl = isFreelance ? '/api/freelance' : `/api/search?q=${encodeURIComponent(raw)}`;
+      let fetchCompleted = false;
+      let fetchResult = null;
+      let fetchError = null;
+
+      const apiPromise = fetch(fetchUrl)
+        .then(async res => {
+          if (!res.ok) {
+            const errJson = await res.json().catch(() => ({}));
+            throw new Error(errJson.error || errJson.details || `HTTP error ${res.status}`);
+          }
+          return res.json();
+        })
+        .then(data => { fetchResult = data; })
+        .catch(err => { fetchError = err; })
+        .finally(() => { fetchCompleted = true; });
+
+      // Progressive visual animation loop while awaiting scraping
+      let currentStep = 0;
+      const stepDuration = isFreelance ? 600 : 1800;
+
+      while (!fetchCompleted && currentStep < stepEls.length - 1) {
+        stepEls[currentStep].classList.add('active');
+        stepEls[currentStep].querySelector('.step-mark').textContent = '◉';
+        loaderBar.style.width = `${((currentStep + 0.6) / stepEls.length) * 100}%`;
+
+        await delay(stepDuration);
+
+        stepEls[currentStep].classList.remove('active');
+        stepEls[currentStep].classList.add('done');
+        stepEls[currentStep].querySelector('.step-mark').textContent = '✓';
+        currentStep++;
+      }
+
+      if (!fetchCompleted) {
+        stepEls[currentStep].classList.add('active');
+        stepEls[currentStep].querySelector('.step-mark').textContent = '◉';
+        loaderBar.style.width = '90%';
+        await apiPromise;
+      } else {
+        await apiPromise;
+      }
+
+      // Finish remaining steps smoothly
+      for (let i = currentStep; i < stepEls.length; i++) {
+        stepEls[i].classList.remove('active');
+        stepEls[i].classList.add('done');
+        stepEls[i].querySelector('.step-mark').textContent = '✓';
+      }
+      loaderBar.style.width = '100%';
+      await delay(250);
 
       loadingState.classList.remove('active');
       searchBtn.disabled = false;
+
+      if (fetchError) {
+        resultsGrid.innerHTML = `
+          <div style="grid-column: 1 / -1; background: var(--bg-white); border: 1px solid var(--border); border-radius: var(--radius); padding: 2.5rem; text-align: center;">
+            <div style="font-size: 1.15rem; font-weight: 700; margin-bottom: .5rem; color: var(--text-1);">Search failed</div>
+            <p style="color: var(--text-2); font-size: .9rem; margin-bottom: 1.25rem;">${fetchError.message || 'Could not retrieve data from sources. Please check connection and try again.'}</p>
+            <button class="nav-btn" id="retry-search-btn" style="margin: 0 auto; cursor: pointer;">Retry Search</button>
+          </div>`;
+        document.getElementById('retry-search-btn')?.addEventListener('click', handleSearch);
+        queryBadge.textContent = query;
+        resultsSection.classList.add('active');
+        return;
+      }
+
+      // Render actual cards from real scraped data
+      let cards = [];
+      if (fetchResult.type === 'freelance') {
+        cards = buildFreelanceCards(fetchResult.data || []);
+      } else {
+        cards = buildFulltimeCards(query, fetchResult.data || {}, fetchResult.freelance || []);
+      }
+
+      resultsGrid.innerHTML = cards.map(renderCard).join('');
+      queryBadge.textContent = query;
       resultsSection.classList.add('active');
       await delay(60);
       resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1362,16 +1531,17 @@
     ctaBtn.addEventListener('click', scrollToSearch);
     navCtaBtn.addEventListener('click', scrollToSearch);
 
+    /* ─── Quick tags clicks ──────────────────────────────────────────────── */
+    window.setSearch = function(val) {
+      searchInput.value = val;
+      handleSearch();
+    };
+
     /* ─── Intersection observer ─────────────────────────────────────────── */
     const io = new IntersectionObserver(entries => {
       entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
     }, { threshold: 0.1 });
     document.querySelectorAll('.fade-up').forEach(el => io.observe(el));
-
-    /* ─── NOTE: Backend integration point ──────────────────────────────── */
-    // Replace the MOCK object and handleSearch body with a real API call:
-    // const res = await fetch(`/api/search?q=${encodeURIComponent(raw)}`);
-    // const data = await res.json();
   </script>
 </body>
 </html>
