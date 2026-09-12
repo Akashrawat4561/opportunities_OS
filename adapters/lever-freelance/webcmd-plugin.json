@@ -1,0 +1,23 @@
+{
+  "name": "lever-freelance",
+  "version": "1.0.0",
+  "description": "Fetch freelance/contract opportunities from RWS and Appen via Lever, prioritizing India-friendly remote roles",
+  "webcmd": ">=0.5.3",
+  "author": {
+    "name": "Cors",
+    "handle": "corsa"
+  },
+  "commands": [
+    {
+      "name": "opportunities",
+      "description": "List India-relevant freelance/contract opportunities from RWS and Appen on Lever",
+      "args": [
+        { "name": "limit", "type": "int", "default": 5, "help": "Number of results to return" }
+      ],
+      "columns": ["title", "company", "type", "location", "apply_url"],
+      "strategy": "PUBLIC",
+      "browser": false,
+      "entry": "freelance.js"
+    }
+  ]
+}
